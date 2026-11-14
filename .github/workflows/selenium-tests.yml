@@ -39,7 +39,7 @@ jobs:
       run: docker compose up -d --wait
 
     - name: Run tests
-      run: mvn -B clean test -Dplatform=remote -Dsuite.file{{ inputs.suite || 'src/test/resources/suites/cross-browser.xml'}}
+      run: mvn -B clean test -Dplatform=remote -Dsuite.file=${{ inputs.suite || 'src/test/resources/suites/cross-browser.xml'}}
 
     - name: Upload report
       if: always()
