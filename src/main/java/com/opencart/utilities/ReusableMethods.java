@@ -1,0 +1,35 @@
+package com.opencart.utilities;
+
+import java.util.List;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.opencart.config.ConfigReader;
+
+public class ReusableMethods {
+
+	WebDriver driver;
+	WebDriverWait wait;
+
+	public ReusableMethods(WebDriver driver) {
+		this.driver = driver;
+		this.wait = new WebDriverWait(driver, ConfigReader.explicitWait());
+	}
+
+	
+
+	public void visibilityOfAllElements(List<WebElement> listOfElement) {
+		wait.until(ExpectedConditions.visibilityOfAllElements(listOfElement));
+	}
+
+	public void elementToBeClickable(WebElement element) {
+		wait.until(ExpectedConditions.elementToBeClickable(element));
+	}
+
+	public void visibilityOf(WebElement element) {
+		wait.until(ExpectedConditions.visibilityOf(element));
+	}
+}

@@ -39,8 +39,8 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: >
-       mvn clean test -PREG -Dplatform=remote_git
-       -Dsurefire.suiteXmlFiles=${{ inputs.xmlfilename || 'TesNg-suite/reg.xml' }}
+       mvn clean test -Dplatform=remote_git
+       -Dsuite.file=${{ inputs.xmlfilename || 'src/test/resources/suites/cross-browser.xml' }}
        -Dmaven.test.failure.ignore=true
 
 #      Report generation

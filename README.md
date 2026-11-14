@@ -1,99 +1,99 @@
-# 🛒 OpenCart Automation Testing Project
+# OpenCart Test Automation
 
-## 📄 Description
-This is an 🛠️ automation testing project for an OpenCart 🛍️ electronic store. Built using Selenium 🕸️ with Java ☕ and TestNG 🧪, the project automates major test scenarios such as validating website login 🔑, placing orders 🛒, utilizing the search box 🔍, and more. The project ensures robust testing of the store's core functionalities ✅.
+Selenium and TestNG test automation framework for an OpenCart demo store (https://awesomeqa.com). It covers the guest checkout flow, product search, menu actions and a footer broken-link check, and it runs on Chrome and Firefox, locally or on a Selenium Grid.
 
----
+## Tech stack
 
-## 🌟 Features
-- **Dynamic Design:** Uses the Page Object Model (POM) 📄 design pattern, ensuring minimal maintenance 🛠️ and high scalability 📈.
-- **Advanced Concepts:**
-  - Implements Page Factory 🏭 for efficient object handling 🖼️.
-  - Utilizes advanced Java ☕ concepts like Streams 🚿 for data processing.
-  - Employs Listeners 👂 to monitor test execution.
-  - Generates comprehensive reports 📊 using Extent Reports 📝.
-  - Manages flaky test cases 🎭 with IRetryAnalyzer.
-- **Data-Driven Testing:** Dynamic test data 📂 is sourced through JSON files 🗂️.
-- **Build and CI/CD Integration:**
-  - Managed with Maven 🏗️ for build automation.
-  - Integrated with Jenkins 🖥️ to establish a high-level CI/CD pipeline 🔄, automatically triggering test cases on code push 🚀.
-- **Comprehensive Selenium Concepts:** Covers testing of:
-  - 📋 Tables
-  - 📜 Scrolling
-  - 🔽 Dropdowns
-  - 🔴 Pop-ups
-  - 🖼️ IFrames and more
- 
----
+- Java 17, Maven
+- Selenium 4, TestNG 7
+- Extent Reports (HTML report with screenshots embedded on failure)
+- Log4j2 for logging
+- Jackson for JSON test data
 
-## 🧰 Key Technologies
-- **Automation Framework:** Selenium 🕸️ with Java ☕
-- **Test Management:** TestNG 🧪
-- **Build Management:** Maven 🏗️
-- **Continuous Integration/Delivery:** Jenkins 🖥️
-- **Reporting:** Extent Reports 📝
-- **Data Handling:** JSON 🗂️
+## Framework design
 
----
+- **Page Object Model** with a shared `BasePage` (driver, waits, `PageFactory` setup).
+- **Thread-safe driver handling:** `DriverManager` keeps one `WebDriver` per thread in a `ThreadLocal`, so tests can run in parallel.
+- **Driver creation in one place:** `DriverFactory` and `BrowserOptions` build Chrome or Firefox for each execution mode.
+- **Externalised configuration:** values come from a system property, then an environment variable, then `config.properties`.
+- **Data-driven tests:** test data is read from JSON files.
+- **Listener and retry:** `TestListener` writes the report and attaches a screenshot on failure, and `RetryAnalyzer` reruns flaky tests.
 
-## 📚 Usage
-1. **Run Tests Locally:**
-   ```bash
-   mvn test
-   ```
-2. **Trigger Tests via Jenkins:**
-   - Push code to the repository 📤.
-   - Jenkins pipeline 🖥️ will automatically execute the test cases ✅.
+## Project structure
 
+```
+src/main/java/com/opencart
+  config/       Browser, ExecutionMode, ConfigReader
+  driver/       DriverManager, DriverFactory, BrowserOptions
+  pages/        BasePage and page objects
+  utilities/    ReusableMethods (waits, scrolling), ScreenshotUtil, JsonDataReader
+src/main/resources
+  config.properties, log4j2.xml
+src/test/java/com/opencart
+  base/         BaseTest
+  listeners/    TestListener, RetryAnalyzer
+  reporting/    ExtentManager
+  tests/        CheckoutTest, SearchTest
+src/test/resources
+  suites/       cross-browser.xml (TestNG suite)
+  testdata/     JSON test data
+```
 
----
+## Configuration
 
-## 📸 Screenshots
-### Test Report
-![Extent Reports](screenshots/extent_report.png)
+Defaults live in `src/main/resources/config.properties`. Any value can be overridden with `-Dkey=value` or with an environment variable (the key in upper case, dots replaced by underscores, for example `GRID_URL`).
 
-### Jenkins Pipeline
-![Jenkins Pipeline](screenshots/jenkins_pipeline.png)
+| Key | Default | Description |
+|---|---|---|
+| `base.url` | https://awesomeqa.com/ui/index.php?route=common/home | Site under test |
+| `grid.url` | http://localhost:4444 | Selenium Grid address, used in `remote` mode |
+| `browser` | chrome | Used when the suite file does not pass `browserName` |
+| `platform` | local | `local`, `remote` or `remote_git` |
+| `explicit.wait` | 5 | Explicit wait timeout in seconds |
+| `retry.count` | 1 | How many times a failed test is retried |
 
----
+Execution modes:
 
-## 🔮 Future Enhancements
-- Integration with additional CI/CD tools 🛠️ like GitHub Actions 🖇️.
-- Adding support for mobile testing 📱 using Appium.
-- Expanding test scenarios 🖼️ to include multi-language 🈴 and multi-currency 💱 support.
+- `local` starts the browser on your machine.
+- `remote` connects to a Selenium Grid at `grid.url`.
+- `remote_git` starts a headless browser, intended for CI runners.
 
----
+## Running the tests
 
-## 🛠️ Prerequisites
-To set up and run this project, ensure the following are installed:
-- Apache Maven 🏗️
-- Jenkins 🖥️
-- Java JDK ☕
+Prerequisites: JDK 17 and Maven, plus Chrome and/or Firefox for local runs.
 
----
+```bash
+git clone https://github.com/rosedaniel7528/OpenCartDocker.git
+cd OpenCartDocker
 
-## 🚀 Installation
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/rosedaniel7528/Opencart.git
-   ```
-2. **Navigate to the Project Directory:**
-   ```bash
-   cd Opencart
-   ```
-3. **Install Dependencies:**
-   Maven 🏗️ will handle dependency installation automatically.
-   ```bash
-   mvn clean install
-   ```
-4. **Configure Jenkins Pipeline:**
-   - Set up a Jenkins pipeline 🖥️ to trigger test cases on every code push 📤.
-   - Configure the pipeline to use the `pom.xml` file for Maven 🏗️.
+# default suite: checkout and search tests on Chrome and Firefox
+mvn clean test
 
----
+# use a different suite file
+mvn clean test -Dsuite.file=src/test/resources/suites/other.xml
 
-## 📧 Contact
-**Rose Daniel**  
-Email: [rosedaniel.s7528@gmail.com](mailto:rosedaniel.s7528@gmail.com)  
+# headless, as used in CI
+mvn clean test -Dplatform=remote_git
+
+# against a Selenium Grid
+mvn clean test -Dplatform=remote -Dgrid.url=http://localhost:4444
+
+# change the explicit wait
+mvn clean test -Dexplicit.wait=10
+```
+
+## Reports and logs
+
+- The Extent report is written to `reports/index.html`. Failed tests include an embedded screenshot.
+- Logs are written to the console and to `logs/automation.log`.
+
+## Roadmap
+
+- Containerise the test runner and the Selenium Grid with Docker and Docker Compose.
+- Run the suite in GitHub Actions against the Dockerised grid, with a browser matrix and published reports.
+
+## Contact
+
+Rose Daniel
+Email: [rosedaniel.s7528@gmail.com](mailto:rosedaniel.s7528@gmail.com)
 GitHub: [rosedaniel7528](https://github.com/rosedaniel7528)
-
