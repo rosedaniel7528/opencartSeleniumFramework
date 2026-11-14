@@ -1,0 +1,43 @@
+services:
+  selenium-hub:
+    image: selenium/hub:4.51.0
+    container_name: selenium-host
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4444/wd/hub/status"]
+      interval: 5s
+      retries: 12
+    ports:
+      - "4444:4444"
+
+  chrome:
+    image: selenium/node-chrome:4.51.0
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_NODE_MAX_SESSIONS=1
+    ports:
+      - "7901:7900"
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:5555/status" ]
+      interval: 5s
+      retries: 12
+
+  firefox:
+    image: selenium/node-firefox:4.51.0
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_NODE_MAX_SESSIONS=1
+    ports:
+      - "7902:7900"
+    healthcheck:
+      test: [ "CMD" ,"curl" ,"-sf" ,"http://localhost:5555/status" ]
+      interval: 5s
+      retries: 12
+

@@ -1,0 +1,60 @@
+name: Selenium Grid Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Suite file'
+        default: "src/test/resources/suites/cross-browser.xml"
+
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Start Selenium Grid
+      run: docker compose up -d --wait
+
+    - name: Run tests
+      run: mvn -B clean test -Dplatform=remote -Dsuite.file{{ inputs.suite || 'src/test/resources/suites/cross-browser.xml'}}
+
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report
+        path: |
+          reports/
+          logs/
+          target/surefire-reports/
+
+    - name: Show grid logs
+      if: failure()
+      run: docker compose logs
+
+    - name: Stop grid
+      if: always()
+      run: docker compose down
