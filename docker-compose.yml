@@ -1,6 +1,6 @@
 services:
   selenium-hub:
-    image: selenium/hub:4.51.0
+    image: selenium/hub:4.52.0
     container_name: selenium-host
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:4444/wd/hub/status"]
