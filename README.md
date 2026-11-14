@@ -1,6 +1,8 @@
 # OpenCart Test Automation
 
-Selenium and TestNG test automation framework for an OpenCart demo store (https://awesomeqa.com). It covers the guest checkout flow, product search, menu actions and a footer broken-link check, and it runs on Chrome and Firefox, locally or on a Selenium Grid.
+[![Selenium Grid Tests](https://github.com/rosedaniel7528/opencartSeleniumFramework/actions/workflows/selenium-tests.yml/badge.svg)](https://github.com/rosedaniel7528/opencartSeleniumFramework/actions/workflows/selenium-tests.yml)
+
+Selenium and TestNG test automation framework for an OpenCart demo store (https://awesomeqa.com). It covers the guest checkout flow and product search, and runs on Chrome and Firefox in parallel, locally or on a Dockerised Selenium Grid. A GitHub Actions pipeline runs the suite on every push and pull request, and nightly.
 
 ## Tech stack
 
@@ -9,6 +11,7 @@ Selenium and TestNG test automation framework for an OpenCart demo store (https:
 - Extent Reports (HTML report with screenshots embedded on failure)
 - Log4j2 for logging
 - Jackson for JSON test data
+- Docker Compose (Selenium Grid) and GitHub Actions for CI
 
 ## Framework design
 
@@ -22,11 +25,13 @@ Selenium and TestNG test automation framework for an OpenCart demo store (https:
 ## Project structure
 
 ```
+docker-compose.yml        Selenium Grid (hub, Chrome node, Firefox node)
+.github/workflows/        CI pipeline
 src/main/java/com/opencart
   config/       Browser, ExecutionMode, ConfigReader
   driver/       DriverManager, DriverFactory, BrowserOptions
   pages/        BasePage and page objects
-  utilities/    ReusableMethods (waits, scrolling), ScreenshotUtil, JsonDataReader
+  utilities/    ReusableMethods (explicit waits), ScreenshotUtil, JsonDataReader
 src/main/resources
   config.properties, log4j2.xml
 src/test/java/com/opencart
@@ -63,8 +68,8 @@ Execution modes:
 Prerequisites: JDK 17 and Maven, plus Chrome and/or Firefox for local runs.
 
 ```bash
-git clone https://github.com/rosedaniel7528/OpenCartDocker.git
-cd OpenCartDocker
+git clone https://github.com/rosedaniel7528/opencartSeleniumFramework.git
+cd opencartSeleniumFramework
 
 # default suite: checkout and search tests on Chrome and Firefox
 mvn clean test
@@ -75,22 +80,35 @@ mvn clean test -Dsuite.file=src/test/resources/suites/other.xml
 # headless, as used in CI
 mvn clean test -Dplatform=remote_git
 
-# against a Selenium Grid
-mvn clean test -Dplatform=remote -Dgrid.url=http://localhost:4444
-
 # change the explicit wait
 mvn clean test -Dexplicit.wait=10
 ```
+
+## Running on a Selenium Grid (Docker)
+
+`docker-compose.yml` starts a Selenium Grid with a hub, a Chrome node and a Firefox node (pinned image versions, healthchecks on every service).
+
+```bash
+docker compose up -d --wait        # waits until the grid is healthy
+mvn clean test -Dplatform=remote   # tests run against http://localhost:4444
+docker compose down
+```
+
+The grid UI is at http://localhost:4444/ui. You can watch the browsers live through noVNC at http://localhost:7901 (Chrome) and http://localhost:7902 (Firefox).
+
+## Continuous integration
+
+The workflow in `.github/workflows/selenium-tests.yml`:
+
+- runs on push and pull request to `main`, nightly, and on demand (with an optional suite file input);
+- starts the grid with `docker compose up -d --wait`, then runs the tests with `-Dplatform=remote`;
+- fails the build when a test fails;
+- always uploads the Extent report, logs and surefire results as an artifact, and always stops the grid.
 
 ## Reports and logs
 
 - The Extent report is written to `reports/index.html`. Failed tests include an embedded screenshot.
 - Logs are written to the console and to `logs/automation.log`.
-
-## Roadmap
-
-- Containerise the test runner and the Selenium Grid with Docker and Docker Compose.
-- Run the suite in GitHub Actions against the Dockerised grid, with a browser matrix and published reports.
 
 ## Contact
 
