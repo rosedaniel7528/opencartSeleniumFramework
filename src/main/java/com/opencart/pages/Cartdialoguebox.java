@@ -11,8 +11,8 @@ public class Cartdialoguebox extends BasePage {
 	}
 	@FindBy(css=".btn.btn-inverse.btn-block.btn-lg.dropdown-toggle")
 	WebElement cart;
-	// making this fail
-	@FindBy(css="strong i[class*='fa-shopping-cart'8]")
+
+	@FindBy(css="strong i[class*='fa-shopping-cart']")
 	WebElement cartbox;
 	
 	
