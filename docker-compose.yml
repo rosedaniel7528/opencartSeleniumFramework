@@ -26,7 +26,7 @@ services:
       retries: 12
 
   firefox:
-    image: selenium/node-firefox:4.51.0
+    image: selenium/node-firefox:160.0.1
     shm_size: 2gb
     depends_on:
       selenium-hub:
